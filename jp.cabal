@@ -6,7 +6,7 @@ version:             0.1.0.0
 synopsis:            Command-line utility for manipulating JSON
 -- description:         
 homepage:            http://github.com/kototama/jp
-license:             BSD-3
+license:             BSD3
 license-file:        LICENSE
 author:              kototama
 maintainer:          kototamo@gmail.com
