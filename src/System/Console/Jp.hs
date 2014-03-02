@@ -24,21 +24,11 @@ jp opts nonOpts = do
 
 main :: IO ()
 main = do
-  setTitle "ANSI Terminal Short Example"
-
-  setSGR [ SetConsoleIntensity BoldIntensity
-         , SetColor Foreground Vivid Red
-         ]
-  putStr "Hello"
-
-  setSGR [ SetConsoleIntensity NormalIntensity
-         , SetColor Foreground Vivid White
-         , SetColor Background Dull Blue
-         ]
-  putDoc $ red (text "Red") <> comma <+> white (text "white") <+> text "and"
-                <+> blue (text "blue") <> char '!' <> linebreak
-  putDoc $ blue (text "Nested" <+> dullyellow (text "colors") <+> text "example")
-                <> linebreak
+  -- putDoc $ braces (text "Red") <> comma <+> white (text "white") <+> text "and"
+  --                             <+> blue (text "blue") <> char '!' <> linebreak
+  -- putDoc $ blue (text "Nested" <+> dullyellow (text "colors") <+> text "example")
+  --               <> linebreak
+  putDoc $ braces ((nest 2 (hardline <> (dquotes (text "foo")) <+> colon <+> (dquotes (text "bar"))) <> comma) <> hardline)
   args <- getArgs
   case getOpt Permute options args of
     (o,n,[] ) -> do
