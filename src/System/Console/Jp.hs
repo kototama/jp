@@ -1,13 +1,17 @@
-module System.Console.Jp (
-main
+module System.Console.Jp 
+(
+ main
 ) where
 
 import System.Environment (getArgs,getProgName)
 import System.Console.GetOpt
-import System.Console.Jp.Options
 
 import System.Console.ANSI
 import Text.PrettyPrint.ANSI.Leijen
+
+import System.Console.Jp.Options
+import System.Console.Jp.Pretty
+
 
 getUsage :: IO String
 getUsage = do
