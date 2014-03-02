@@ -1,5 +1,5 @@
 module System.Console.Jp.Options 
-(options)
+(options, Options)
 where
 
 import System.Console.GetOpt
