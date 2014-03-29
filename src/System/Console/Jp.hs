@@ -35,6 +35,7 @@ jp opts nonOpts = do
   mapM_ putStr nonOpts
 
 v1 = decode "{\"foo\":1,\"bar\":\"bar\"}" :: Maybe Value
+v2 = decode "[1,2,3]" :: Maybe [Int]
 
 main :: IO ()
 main = do
@@ -42,8 +43,8 @@ main = do
   --                             <+> blue (text "blue") <> char '!' <> linebreak
   -- putDoc $ blue (text "Nested" <+> dullyellow (text "colors") <+> text "example")
   --               <> linebreak
-  -- putDoc $ red (encodePretty ["a", "b", "c"])
-  putDoc $ (encodePretty (fromJust v1))
+  putDoc $ red (encodePretty (fromJust v2))
+  putDoc $ (dullgreen (encodePretty (fromJust v1)))
   -- putDoc $ braces ((nest 2 (hardline <> (dquotes (text "foo")) <+> colon <+> (dquotes (text "bar"))) <> comma) <> hardline)
   -- args <- getArgs
   -- case getOpt Permute options args of

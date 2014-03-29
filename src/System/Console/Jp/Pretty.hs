@@ -63,12 +63,12 @@ import Data.List (intersperse, sortBy, elemIndex)
 import Data.Maybe (fromMaybe)
 import Data.Monoid (mappend, mconcat, mempty)
 import Data.Ord
-import Data.Text (Text)
+import Data.Text (Text, unpack)
 import Data.Text.Lazy.Builder (Builder, toLazyText)
 import Data.Text.Lazy.Encoding (encodeUtf8)
 import qualified Data.Vector as V (toList)
 import Text.PrettyPrint.ANSI.Leijen
-import Data.Text.Lazy (unpack)
+import qualified Data.Text.Lazy as TL
 
 data PState = PState { pstIndent :: Int
                      , pstLevel  :: Int
@@ -117,20 +117,18 @@ encodePretty' Config{..} = fromValue st . toJSON
 fromValue :: PState -> Value -> Doc
 fromValue st@PState{..} = go
   where
---    go (Array v)  = fromCompound st (text "[", text "]") fromValue (V.toList v)
     go (Array v)  = fromArray st (V.toList v)
-    go (Object m) = fromCompound st (text "{", text "}") fromPair (pstSort (H.toList m))
+    go (Object m) = fromObject st (pstSort (H.toList m))
     go v          = fromSingleton v
 
 fromArray :: PState -> [Value] -> Doc
-fromArray st items = brackets (fromItems st items)
+fromArray st items = encloseSep lbracket rbracket comma (map (fromValue st) items)
 
-fromItems st@PState{..} items = mconcat . intersperse ",\n" $
-                         map (\item -> fromIndent st' <> fromValue st' item)
-                             items
-                     where st' = st { pstLevel = pstLevel + 1 }
+fromObject :: PState -> [(Text, Value)] -> Doc
+fromObject st items = encloseSep lbrace rbrace comma (map (\p -> fromPair p) items)
+    where fromPair p = (text . unpack $ fst p) <> colon <+> (fromValue st (snd p))
 
-fromSingleton v = text . unpack . toLazyText $ Aeson.encodeToTextBuilder v
+fromSingleton v = text . TL.unpack . toLazyText $ Aeson.encodeToTextBuilder v
 
 fromCompound :: PState
              -> (Doc, Doc)
@@ -148,9 +146,6 @@ fromCompound st@PState{..} (delimL,delimR) fromItem items = mconcat
                 map (\item -> fromIndent st' <> fromItem st' item)
                     items
     st' = st { pstLevel = pstLevel + 1 }
-
-fromPair :: PState -> (Text, Value) -> Doc
-fromPair st (k,v) = (fromSingleton (toJSON k)) <> (text ": ") <> (fromValue st v)
 
 fromIndent :: PState -> Doc
 fromIndent PState{..} = mconcat $ replicate (pstIndent * pstLevel) " "
