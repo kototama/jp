@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module System.Console.Jp 
 (
  main
@@ -14,6 +16,11 @@ import System.Console.Jp.Pretty
 
 import qualified Data.ByteString.Lazy as B
 
+import Data.Maybe (fromJust)
+
+import Data.Aeson
+
+
 getUsage :: IO String
 getUsage = do
   pn <- getProgName
@@ -27,13 +34,16 @@ jp opts nonOpts = do
   putStr $ show opts
   mapM_ putStr nonOpts
 
+v1 = decode "{\"foo\":1,\"bar\":\"bar\"}" :: Maybe Value
+
 main :: IO ()
 main = do
   -- putDoc $ braces (text "Red") <> comma <+> white (text "white") <+> text "and"
   --                             <+> blue (text "blue") <> char '!' <> linebreak
   -- putDoc $ blue (text "Nested" <+> dullyellow (text "colors") <+> text "example")
   --               <> linebreak
-  putDoc $ red (encodePretty ["a", "b", "c"])
+  -- putDoc $ red (encodePretty ["a", "b", "c"])
+  putDoc $ (encodePretty (fromJust v1))
   -- putDoc $ braces ((nest 2 (hardline <> (dquotes (text "foo")) <+> colon <+> (dquotes (text "bar"))) <> comma) <> hardline)
   -- args <- getArgs
   -- case getOpt Permute options args of

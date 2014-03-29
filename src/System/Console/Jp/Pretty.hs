@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 
--- |Aeson-compatible pretty-printing of JSON 'Value's.
+-- |Aeson-compatible colored pretty-printing of JSON 'Value's.
+-- Adapted from Data.Aeson.Encode.Pretty
 module System.Console.Jp.Pretty (
     -- * Simple Pretty-Printing
     encodePretty,
@@ -116,9 +117,18 @@ encodePretty' Config{..} = fromValue st . toJSON
 fromValue :: PState -> Value -> Doc
 fromValue st@PState{..} = go
   where
-    go (Array v)  = fromCompound st (text "[", text "]") fromValue (V.toList v)
+--    go (Array v)  = fromCompound st (text "[", text "]") fromValue (V.toList v)
+    go (Array v)  = fromArray st (V.toList v)
     go (Object m) = fromCompound st (text "{", text "}") fromPair (pstSort (H.toList m))
     go v          = fromSingleton v
+
+fromArray :: PState -> [Value] -> Doc
+fromArray st items = brackets (fromItems st items)
+
+fromItems st@PState{..} items = mconcat . intersperse ",\n" $
+                         map (\item -> fromIndent st' <> fromValue st' item)
+                             items
+                     where st' = st { pstLevel = pstLevel + 1 }
 
 fromSingleton v = text . unpack . toLazyText $ Aeson.encodeToTextBuilder v
 
