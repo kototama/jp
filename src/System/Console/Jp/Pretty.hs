@@ -66,6 +66,8 @@ import Data.Text (Text)
 import Data.Text.Lazy.Builder (Builder, toLazyText)
 import Data.Text.Lazy.Encoding (encodeUtf8)
 import qualified Data.Vector as V (toList)
+import Text.PrettyPrint.ANSI.Leijen
+import Data.Text.Lazy (unpack)
 
 data PState = PState { pstIndent :: Int
                      , pstLevel  :: Int
@@ -96,33 +98,35 @@ keyOrder ks = comparing $ \k -> fromMaybe maxBound (elemIndex k ks)
 defConfig :: Config
 defConfig = Config { confIndent = 4, confCompare = mempty }
 
--- |A drop-in replacement for aeson's 'Aeson.encode' function, producing 
---  JSON-ByteStrings for human readers.
+-- |Encodes JSON as a colored document.
+--
 --
 --  Follows the default configuration in 'defConfig'.
-encodePretty :: ToJSON a => a -> ByteString
+encodePretty :: ToJSON a => a -> Doc
 encodePretty = encodePretty' defConfig
 
 -- |A variant of 'encodePretty' that takes an additional configuration
 --  parameter.
-encodePretty' :: ToJSON a => Config -> a -> ByteString
-encodePretty' Config{..} = encodeUtf8 . toLazyText . fromValue st . toJSON
+encodePretty' :: ToJSON a => Config -> a -> Doc
+encodePretty' Config{..} = fromValue st . toJSON
   where
     st       = PState confIndent 0 condSort
     condSort = sortBy (confCompare `on` fst)
 
-fromValue :: PState -> Value -> Builder
+fromValue :: PState -> Value -> Doc
 fromValue st@PState{..} = go
   where
-    go (Array v)  = fromCompound st ("[","]") fromValue (V.toList v)
-    go (Object m) = fromCompound st ("{","}") fromPair (pstSort (H.toList m))
-    go v          = Aeson.fromValue v
+    go (Array v)  = fromCompound st (text "[", text "]") fromValue (V.toList v)
+    go (Object m) = fromCompound st (text "{", text "}") fromPair (pstSort (H.toList m))
+    go v          = fromSingleton v
+
+fromSingleton v = text . unpack . toLazyText $ Aeson.encodeToTextBuilder v
 
 fromCompound :: PState
-             -> (Builder, Builder)
-             -> (PState -> a -> Builder)
+             -> (Doc, Doc)
+             -> (PState -> a -> Doc)
              -> [a]
-             -> Builder
+             -> Doc
 fromCompound st@PState{..} (delimL,delimR) fromItem items = mconcat
     [ delimL
     , if null items then mempty
@@ -135,13 +139,10 @@ fromCompound st@PState{..} (delimL,delimR) fromItem items = mconcat
                     items
     st' = st { pstLevel = pstLevel + 1 }
 
-fromPair :: PState -> (Text, Value) -> Builder
-fromPair st (k,v) = Aeson.fromValue (toJSON k) <> ": " <> fromValue st v
+fromPair :: PState -> (Text, Value) -> Doc
+fromPair st (k,v) = (fromSingleton (toJSON k)) <> (text ": ") <> (fromValue st v)
 
-fromIndent :: PState -> Builder
+fromIndent :: PState -> Doc
 fromIndent PState{..} = mconcat $ replicate (pstIndent * pstLevel) " "
 
-(<>) :: Builder -> Builder -> Builder
-(<>) = mappend
-infixr 6 <>
 

@@ -12,6 +12,7 @@ import Text.PrettyPrint.ANSI.Leijen
 import System.Console.Jp.Options
 import System.Console.Jp.Pretty
 
+import qualified Data.ByteString.Lazy as B
 
 getUsage :: IO String
 getUsage = do
@@ -32,11 +33,12 @@ main = do
   --                             <+> blue (text "blue") <> char '!' <> linebreak
   -- putDoc $ blue (text "Nested" <+> dullyellow (text "colors") <+> text "example")
   --               <> linebreak
-  putDoc $ braces ((nest 2 (hardline <> (dquotes (text "foo")) <+> colon <+> (dquotes (text "bar"))) <> comma) <> hardline)
-  args <- getArgs
-  case getOpt Permute options args of
-    (o,n,[] ) -> do
-         jp o n
-         return ()
-    (_,_,errs) -> putStr $ show errs -- ioError (userError "blabla")
+  putDoc $ red (encodePretty ["a", "b", "c"])
+  -- putDoc $ braces ((nest 2 (hardline <> (dquotes (text "foo")) <+> colon <+> (dquotes (text "bar"))) <> comma) <> hardline)
+  -- args <- getArgs
+  -- case getOpt Permute options args of
+  --   (o,n,[] ) -> do
+  --        jp o n
+  --        return ()
+  --   (_,_,errs) -> putStr $ show errs -- ioError (userError "blabla")
 
