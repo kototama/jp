@@ -71,6 +71,7 @@ import Text.PrettyPrint.ANSI.Leijen
 import qualified Data.Text.Lazy as TL
 
 data PState = PState { pstSort   :: [(Text, Value)] -> [(Text, Value)]
+                     , pstIndent :: Int
                      , pstBeforeSep :: Doc
                      , pstAfterSep :: Doc
                      , pstCatArray :: [Doc] -> Doc
@@ -79,6 +80,7 @@ data PState = PState { pstSort   :: [(Text, Value)] -> [(Text, Value)]
                      , pstCatObject :: [Doc] -> Doc
                      , pstObjectPrefix :: Doc
                      , pstObjectSuffix :: Doc
+                      
                      }
 
 data Config = Config
@@ -144,9 +146,17 @@ encodePretty = encodePretty' defConfig
 encodePretty' :: ToJSON a => Config -> a -> Doc
 encodePretty' Config{..} = fromValue st . toJSON
   where
-    st       = PState condSort beforeSep afterSep
-               catArray arrayPrefix arraySuffix 
-               catObject objectPrefix objectSuffix 
+    st       = PState { pstSort = condSort
+                      , pstIndent = confIndent
+                      , pstBeforeSep = beforeSep
+                      , pstAfterSep = afterSep
+                      , pstCatArray = catArray
+                      , pstArrayPrefix = arrayPrefix
+                      , pstArraySuffix = arraySuffix
+                      , pstCatObject = catObject
+                      , pstObjectPrefix = objectPrefix
+                      , pstObjectSuffix = objectSuffix
+                      }
     condSort = sortBy (confCompare `on` fst)
 
 fromValue :: PState -> Value -> Doc
@@ -159,12 +169,12 @@ fromValue st@PState{..} = go
 fromArray :: PState -> [Value] -> Doc
 fromArray st@PState{..} items = pstArrayPrefix <> arrayContent <> pstArraySuffix
     where ds = (map (fromValue st) items)
-          arrayContent = indent 4 $ (pstCatArray (punctuate' st ds))
+          arrayContent = indent pstIndent $ (pstCatArray (punctuate' st ds))
 
 fromObject :: PState -> [(Text,Value)] -> Doc
 fromObject st@PState{..} items = pstObjectPrefix <> objectContent <> pstObjectSuffix
     where ds = (map (fromPair st) items)
-          objectContent = indent 4 $ (pstCatObject (punctuate' st ds))
+          objectContent = indent pstIndent $ (pstCatObject (punctuate' st ds))
 
 fromPair :: PState -> (Text,Value) -> Doc
 fromPair st p = (text . unpack $ fst p) <> colon <+> (fromScalar st (snd p))

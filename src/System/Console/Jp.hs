@@ -5,39 +5,43 @@ module System.Console.Jp
  main
 ) where
 
-import System.Environment (getArgs,getProgName)
-import System.Console.GetOpt
+-- import System.Environment (getProgName)
+-- import System.Console.GetOpt
 
-import System.Console.ANSI
 import Text.PrettyPrint.ANSI.Leijen
 
-import System.Console.Jp.Options
+-- import System.Console.Jp.Options
 import System.Console.Jp.Pretty
-
-import qualified Data.ByteString.Lazy as B
 
 import Data.Maybe (fromJust)
 
 import Data.Aeson
 
 
-getUsage :: IO String
-getUsage = do
-  pn <- getProgName
-  return $ usageInfo ("Usage: " ++ pn ++ "[<option>]") options
+-- getUsage :: IO String
+-- getUsage = do
+--   pn <- getProgName
+--   return $ usageInfo ("Usage: " ++ pn ++ "[<option>]") options
 
 -- compilerOpts :: [String] -> IO 
 
-jp :: [Options] -> [String] -> IO ()
-jp opts nonOpts = do
-  putStr "here"
-  putStr $ show opts
-  mapM_ putStr nonOpts
+-- jp :: [Options] -> [String] -> IO ()
+-- jp opts nonOpts = do
+--   putStr "here"
+--   putStr $ show opts
+--   mapM_ putStr nonOpts
 
-v1 = decode "{\"foo\":1,\"bar\":\"bar\"}" :: Maybe Value
-v2 = decode "[1,2,3,4,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,5]" :: Maybe [Int]
-v3 = decode "[1,2,3,4,54]" :: Maybe [Int]
-someText = map text ["words","in","a","tuple"]
+v1 :: Maybe Value
+v1 = decode "{\"foo\":1,\"bar\":\"bar\"}" 
+
+-- v2 :: Maybe [Int]
+-- v2 = decode "[1,2,3,4,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,5]"
+
+v3 :: Maybe [Int]
+v3 = decode "[1,2,3,4,54]"
+
+-- someText :: [Doc]
+-- someText = map text ["words","in","a","tuple"]
 
 main :: IO ()
 main = do
