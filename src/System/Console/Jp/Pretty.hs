@@ -74,6 +74,8 @@ data PState = PState { pstSort   :: [(Text, Value)] -> [(Text, Value)]
                      , pstAfterSep :: Doc
                      , pstCatObject :: [Doc] -> Doc
                      , pstCatArray :: [Doc] -> Doc
+                     , pstArrayPrefix :: Doc
+                     , pstArraySuffix :: Doc
                      }
 
 data Config = Config
@@ -89,6 +91,10 @@ data Config = Config
     -- ^ The function to concatenate document representing object's items
     , catArray  :: [Doc] -> Doc
     -- ^ The function to concatenate document representing array's items
+    , arrayPrefix :: Doc
+    -- ^ The prefix of the array's elements
+    , arraySuffix :: Doc
+    -- ^ The suffix of the array's elements
     }
 
 -- |Sort keys by their order of appearance in the argument list.
@@ -112,6 +118,8 @@ defConfig = Config { confIndent = 4
                    , afterSep = (comma <> empty)
                    , catObject = vcat
                    , catArray = cat
+                   , arrayPrefix = (lbracket <$> empty)
+                   , arraySuffix = (empty <$> rbracket)
                    }
 
 -- |Encodes JSON as a colored document.
@@ -126,7 +134,7 @@ encodePretty = encodePretty' defConfig
 encodePretty' :: ToJSON a => Config -> a -> Doc
 encodePretty' Config{..} = fromValue st . toJSON
   where
-    st       = PState condSort beforeSep afterSep catObject catArray
+    st       = PState condSort beforeSep afterSep catObject catArray arrayPrefix arraySuffix
     condSort = sortBy (confCompare `on` fst)
 
 fromValue :: PState -> Value -> Doc
@@ -137,8 +145,9 @@ fromValue st@PState{..} = go
     go v          = fromScalar v
 
 fromArray :: PState -> [Value] -> Doc
-fromArray st@PState{..} items = brackets (pstCatObject (punctuate' st ds))
+fromArray st@PState{..} items = pstArrayPrefix <> arrayContent <> pstArraySuffix
                                 where ds = (map (fromValue st) items)
+                                      arrayContent = indent 4 $ (pstCatObject (punctuate' st ds))
 
 fromObject :: PState -> [(Text, Value)] -> Doc
 fromObject st items = encloseSep lbrace rbrace comma (map (\p -> fromPair p) items)
