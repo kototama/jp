@@ -42,6 +42,8 @@ someText = map text ["words","in","a","tuple"]
 main :: IO ()
 main = do
   putDoc $ red (encodePretty (fromJust v3))
+  putStr "\n"
+  putDoc $ red (encodePretty (fromJust v1))
 --  putDoc $ nest 2 (text "hello" <$> text "world" <$> "third") <$> text "!"
 --  putDoc $ parens (align (vcat (punctuate (space <> comma) someText)))
 

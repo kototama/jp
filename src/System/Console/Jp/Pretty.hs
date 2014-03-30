@@ -72,10 +72,12 @@ import qualified Data.Text.Lazy as TL
 data PState = PState { pstSort   :: [(Text, Value)] -> [(Text, Value)]
                      , pstBeforeSep :: Doc
                      , pstAfterSep :: Doc
-                     , pstCatObject :: [Doc] -> Doc
                      , pstCatArray :: [Doc] -> Doc
                      , pstArrayPrefix :: Doc
                      , pstArraySuffix :: Doc
+                     , pstCatObject :: [Doc] -> Doc
+                     , pstObjectPrefix :: Doc
+                     , pstObjectSuffix :: Doc
                      }
 
 data Config = Config
@@ -95,6 +97,11 @@ data Config = Config
     -- ^ The prefix of the array's elements
     , arraySuffix :: Doc
     -- ^ The suffix of the array's elements
+    , objectPrefix :: Doc
+    -- ^ The prefix of the object's elements
+    , objectSuffix :: Doc
+    -- ^ The suffix of the object's elements
+    
     }
 
 -- |Sort keys by their order of appearance in the argument list.
@@ -120,6 +127,8 @@ defConfig = Config { confIndent = 4
                    , catArray = cat
                    , arrayPrefix = (lbracket <$> empty)
                    , arraySuffix = (empty <$> rbracket)
+                   , objectPrefix = (lbrace <$> empty)
+                   , objectSuffix = (empty <$> rbrace)
                    }
 
 -- |Encodes JSON as a colored document.
@@ -134,32 +143,34 @@ encodePretty = encodePretty' defConfig
 encodePretty' :: ToJSON a => Config -> a -> Doc
 encodePretty' Config{..} = fromValue st . toJSON
   where
-    st       = PState condSort beforeSep afterSep catObject catArray arrayPrefix arraySuffix
+    st       = PState condSort beforeSep afterSep
+               catArray arrayPrefix arraySuffix 
+               catObject objectPrefix objectSuffix 
     condSort = sortBy (confCompare `on` fst)
 
 fromValue :: PState -> Value -> Doc
 fromValue st@PState{..} = go
   where
     go (Array v)  = fromArray st (V.toList v)
-    go (Object m) = fromObject2 st (pstSort (H.toList m))
-    go v          = fromScalar v
+    go (Object m) = fromObject st (pstSort (H.toList m))
+    go v          = fromScalar st v
 
 fromArray :: PState -> [Value] -> Doc
 fromArray st@PState{..} items = pstArrayPrefix <> arrayContent <> pstArraySuffix
                                 where ds = (map (fromValue st) items)
-                                      arrayContent = indent 4 $ (pstCatObject (punctuate' st ds))
+                                      arrayContent = indent 4 $ (pstCatArray (punctuate' st ds))
 
-fromObject :: PState -> [(Text, Value)] -> Doc
-fromObject st items = encloseSep lbrace rbrace comma (map (\p -> fromPair p) items)
-    where fromPair p = (text . unpack $ fst p) <> colon <+> (fromValue st (snd p))
+fromObject :: PState -> [(Text,Value)] -> Doc
+fromObject st@PState{..} items = pstObjectPrefix <> objectContent <> pstObjectSuffix
+                                      where ds = (map (fromPair st) items)
+                                            objectContent = indent 4 $ (pstCatObject (punctuate' st ds))
 
-
-fromObject2 st items = semiBraces (map (\p -> fromPair p) items)
-    where fromPair p = (text . unpack $ fst p) <> colon <+> (fromValue st (snd p))
+fromPair :: PState -> (Text,Value) -> Doc
+fromPair st p = (text . unpack $ fst p) <> colon <+> (fromScalar st (snd p))
 
 punctuate' :: PState -> [Doc] -> [Doc]
 punctuate' _ []      = []
 punctuate' _ [d]     = [d]
 punctuate' st@PState{..} (d:ds)  = (pstBeforeSep <> d <> pstAfterSep) : punctuate' st ds
 
-fromScalar v = text . TL.unpack . toLazyText $ Aeson.encodeToTextBuilder v
+fromScalar st v = text . TL.unpack . toLazyText $ Aeson.encodeToTextBuilder v
