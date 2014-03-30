@@ -195,7 +195,7 @@ fromObject st@PState{..} items = pstObjectPrefix <> objectContent <> pstObjectSu
           objectContent = indent pstIndent $ (pstCatObject (punctuate' st ds))
 
 fromPair :: PState -> (Text,Value) -> Doc
-fromPair st p = (text . unpack $ fst p) <> colon <+> (fromScalar st (snd p))
+fromPair st p = (text . unpack $ fst p) <> colon <+> (fromValue st (snd p))
 
 punctuate' :: PState -> [Doc] -> [Doc]
 punctuate' _ []      = []

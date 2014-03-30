@@ -32,13 +32,13 @@ import Data.Aeson
 --   mapM_ putStr nonOpts
 
 v1 :: Maybe Value
-v1 = decode "{\"foo\":1,\"bar\":\"bar\", \"z\": null, \"zz\": true}" 
+v1 = decode "{\"foo\":1,\"bar\":\"bar\", \"z\": null, \"zz\": true, \"emb\": {\"foo\":1,\"bar\":\"bar\", \"z\": null, \"zz\": true}}" 
 
 -- v2 :: Maybe [Int]
 -- v2 = decode "[1,2,3,4,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,5]"
 
-v3 :: Maybe [Int]
-v3 = decode "[1,2,3,4,54]"
+v3 :: Maybe [Value]
+v3 = decode "[1,2,3,4,54, {\"foo\":1,\"bar\":\"bar\", \"z\": null, \"zz\": true}]"
 
 -- someText :: [Doc]
 -- someText = map text ["words","in","a","tuple"]
