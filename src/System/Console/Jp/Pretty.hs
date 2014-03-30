@@ -80,7 +80,10 @@ data PState = PState { pstSort   :: [(Text, Value)] -> [(Text, Value)]
                      , pstCatObject :: [Doc] -> Doc
                      , pstObjectPrefix :: Doc
                      , pstObjectSuffix :: Doc
-                      
+                     , pstStringFn :: Doc -> Doc
+                     , pstNumberFn :: Doc -> Doc
+                     , pstBoolFn :: Doc -> Doc
+                     , pstNullFn :: Doc -> Doc
                      }
 
 data Config = Config
@@ -104,7 +107,14 @@ data Config = Config
     -- ^ The prefix of the object's elements
     , objectSuffix :: Doc
     -- ^ The suffix of the object's elements
-    
+    , stringFn :: Doc -> Doc
+    -- ^ The function to apply to document representing a string
+    , numberFn :: Doc -> Doc
+    -- ^ The function to apply to document representing a number
+    , boolFn :: Doc -> Doc
+    -- ^ The function to apply to document representing a boolean
+    , nullFn :: Doc -> Doc
+    -- ^ The function to apply to document representing a null value
     }
 
 -- |Sort keys by their order of appearance in the argument list.
@@ -132,6 +142,10 @@ defConfig = Config { confIndent = 4
                    , arraySuffix = (empty <$> rbracket)
                    , objectPrefix = (lbrace <$> empty)
                    , objectSuffix = (empty <$> rbrace)
+                   , stringFn = dullgreen
+                   , numberFn = dullmagenta
+                   , boolFn = dullred
+                   , nullFn = white
                    }
 
 -- |Encodes JSON as a colored document.
@@ -156,6 +170,10 @@ encodePretty' Config{..} = fromValue st . toJSON
                       , pstCatObject = catObject
                       , pstObjectPrefix = objectPrefix
                       , pstObjectSuffix = objectSuffix
+                      , pstStringFn = stringFn
+                      , pstNumberFn = numberFn
+                      , pstBoolFn = boolFn
+                      , pstNullFn = nullFn
                       }
     condSort = sortBy (confCompare `on` fst)
 
@@ -185,9 +203,11 @@ punctuate' _ [d]     = [d]
 punctuate' st@PState{..} (d:ds)  = (pstBeforeSep <> d <> pstAfterSep) : punctuate' st ds
 
 fromScalar :: PState -> Value -> Doc
-fromScalar st v@(Aeson.Number _) = dullmagenta $ scalarToText v 
-fromScalar st v@(Aeson.String _) = dullgreen $ scalarToText v 
-fromScalar st v = scalarToText v
+fromScalar PState{..} v@(Aeson.String _) = pstStringFn $ scalarToText v
+fromScalar PState{..} v@(Aeson.Number _) = pstNumberFn $ scalarToText v 
+fromScalar PState{..} v@(Aeson.Bool _) = pstBoolFn $ scalarToText v 
+fromScalar PState{..} v@Aeson.Null = pstNullFn $ scalarToText v 
+fromScalar _ v = scalarToText v
 
 scalarToText :: Value -> Doc
 scalarToText v = text . TL.unpack . toLazyText $ encodeToTextBuilder v
