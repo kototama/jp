@@ -56,16 +56,15 @@ module System.Console.Jp.Pretty (
 
 import Data.Aeson (Value(..), ToJSON(..))
 import qualified Data.Aeson.Encode as Aeson
-import Data.ByteString.Lazy (ByteString)
 import Data.Function (on)
 import qualified Data.HashMap.Strict as H (toList)
-import Data.List (intersperse, sortBy, elemIndex)
+import Data.List (sortBy, elemIndex)
 import Data.Maybe (fromMaybe)
-import Data.Monoid (mappend, mconcat, mempty)
+import Data.Monoid (mempty)
 import Data.Ord
 import Data.Text (Text, unpack)
-import Data.Text.Lazy.Builder (Builder, toLazyText)
-import Data.Text.Lazy.Encoding (encodeUtf8)
+import Data.Text.Lazy.Builder (toLazyText)
+-- import Data.Text.Lazy.Encoding (encodeUtf8)
 import qualified Data.Vector as V (toList)
 import Text.PrettyPrint.ANSI.Leijen
 import qualified Data.Text.Lazy as TL
@@ -73,6 +72,8 @@ import qualified Data.Text.Lazy as TL
 data PState = PState { pstSort   :: [(Text, Value)] -> [(Text, Value)]
                      , pstBeforeSep :: Doc
                      , pstAfterSep :: Doc
+                     , pstCatObject :: [Doc] -> Doc
+                     , pstCatArray :: [Doc] -> Doc
                      }
 
 data Config = Config
@@ -80,10 +81,14 @@ data Config = Config
       -- ^ Indentation spaces per level of nesting
     , confCompare :: Text -> Text -> Ordering
       -- ^ Function used to sort keys in objects
-    , beforeSep :: String
+    , beforeSep :: Doc
       -- ^ The separator displayed before the item
-    , afterSep :: String
+    , afterSep :: Doc
       -- ^ The separator displayed after the item
+    , catObject :: [Doc] -> Doc
+    -- ^ The function to concatenate document representing object's items
+    , catArray  :: [Doc] -> Doc
+    -- ^ The function to concatenate document representing array's items
     }
 
 -- |Sort keys by their order of appearance in the argument list.
@@ -101,7 +106,13 @@ keyOrder ks = comparing $ \k -> fromMaybe maxBound (elemIndex k ks)
 --
 --  > defConfig = Config { confIndent = 4, confSort = mempty }
 defConfig :: Config
-defConfig = Config { confIndent = 4, confCompare = mempty, beforeSep = "", afterSep = ", " }
+defConfig = Config { confIndent = 4
+                   , confCompare = mempty
+                   , beforeSep = empty
+                   , afterSep = (comma <> empty)
+                   , catObject = vcat
+                   , catArray = cat
+                   }
 
 -- |Encodes JSON as a colored document.
 --
@@ -115,7 +126,7 @@ encodePretty = encodePretty' defConfig
 encodePretty' :: ToJSON a => Config -> a -> Doc
 encodePretty' Config{..} = fromValue st . toJSON
   where
-    st       = PState condSort (string beforeSep) (string afterSep)
+    st       = PState condSort beforeSep afterSep catObject catArray
     condSort = sortBy (confCompare `on` fst)
 
 fromValue :: PState -> Value -> Doc
@@ -123,10 +134,11 @@ fromValue st@PState{..} = go
   where
     go (Array v)  = fromArray st (V.toList v)
     go (Object m) = fromObject2 st (pstSort (H.toList m))
-    go v          = fromSingleton v
+    go v          = fromScalar v
 
 fromArray :: PState -> [Value] -> Doc
-fromArray st items = encloseSep' st lbracket rbracket (map (fromValue st) items)
+fromArray st@PState{..} items = brackets (pstCatObject (punctuate' st ds))
+                                where ds = (map (fromValue st) items)
 
 fromObject :: PState -> [(Text, Value)] -> Doc
 fromObject st items = encloseSep lbrace rbrace comma (map (\p -> fromPair p) items)
@@ -136,12 +148,9 @@ fromObject st items = encloseSep lbrace rbrace comma (map (\p -> fromPair p) ite
 fromObject2 st items = semiBraces (map (\p -> fromPair p) items)
     where fromPair p = (text . unpack $ fst p) <> colon <+> (fromValue st (snd p))
 
-encloseSep' :: PState -> Doc -> Doc -> [Doc] -> Doc
-encloseSep' st@PState{..} left right ds
-    = case ds of
-        []  -> left <> right
-        [d] -> left <> d <> right
-        _   -> align $ cat (zipWith3 tCat (repeat pstBeforeSep) ds (repeat pstAfterSep))
-    where tCat = (\b d a -> b <> d <> a)
+punctuate' :: PState -> [Doc] -> [Doc]
+punctuate' _ []      = []
+punctuate' _ [d]     = [d]
+punctuate' st@PState{..} (d:ds)  = (pstBeforeSep <> d <> pstAfterSep) : punctuate' st ds
 
-fromSingleton v = text . TL.unpack . toLazyText $ Aeson.encodeToTextBuilder v
+fromScalar v = text . TL.unpack . toLazyText $ Aeson.encodeToTextBuilder v
