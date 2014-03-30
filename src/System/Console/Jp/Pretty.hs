@@ -74,6 +74,7 @@ data PState = PState { pstSort   :: [(Text, Value)] -> [(Text, Value)]
                      , pstIndent :: Int
                      , pstBeforeSep :: Doc
                      , pstAfterSep :: Doc
+                     , pstPairSep :: Doc
                      , pstCatArray :: [Doc] -> Doc
                      , pstArrayPrefix :: Doc
                      , pstArraySuffix :: Doc
@@ -95,6 +96,8 @@ data Config = Config
       -- ^ The separator displayed before the item
     , afterSep :: Doc
       -- ^ The separator displayed after the item
+    , pairSep :: Doc
+      -- ^ The separator displayed between the key and the value of an object
     , catObject :: [Doc] -> Doc
     -- ^ The function to concatenate document representing object's items
     , catArray  :: [Doc] -> Doc
@@ -136,6 +139,7 @@ defConfig = Config { confIndent = 4
                    , confCompare = mempty
                    , beforeSep = empty
                    , afterSep = (comma <> empty)
+                   , pairSep = (colon <> space)
                    , catObject = vcat
                    , catArray = cat
                    , arrayPrefix = (lbracket <$> empty)
@@ -164,6 +168,7 @@ encodePretty' Config{..} = fromValue st . toJSON
                       , pstIndent = confIndent
                       , pstBeforeSep = beforeSep
                       , pstAfterSep = afterSep
+                      , pstPairSep = pairSep
                       , pstCatArray = catArray
                       , pstArrayPrefix = arrayPrefix
                       , pstArraySuffix = arraySuffix
@@ -195,7 +200,7 @@ fromObject st@PState{..} items = pstObjectPrefix <> objectContent <> pstObjectSu
           objectContent = indent pstIndent $ (pstCatObject (punctuate' st ds))
 
 fromPair :: PState -> (Text,Value) -> Doc
-fromPair st p = (text . unpack $ fst p) <> colon <+> (fromValue st (snd p))
+fromPair st@PState{..} p = (text . unpack $ fst p) <> pstPairSep <> (fromValue st (snd p))
 
 punctuate' :: PState -> [Doc] -> [Doc]
 punctuate' _ []      = []
