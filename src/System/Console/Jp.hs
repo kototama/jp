@@ -8,6 +8,8 @@ module System.Console.Jp
 -- import System.Environment (getProgName)
 -- import System.Console.GetOpt
 
+import qualified Data.ByteString.Lazy as B
+
 import Text.PrettyPrint.ANSI.Leijen
 
 -- import System.Console.Jp.Options
@@ -37,7 +39,7 @@ v1 = decode "{\"foo\":1,\"bar\":\"bar\", \"z\": null, \"zz\": true, \"emb\": {\"
 -- v2 :: Maybe [Int]
 -- v2 = decode "[1,2,3,4,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,5]"
 
-v3 :: Maybe [Value]
+v3 :: Maybe Value
 v3 = decode "[1,2,3,4,54, {\"foo\":1,\"bar\":\"bar\", \"z\": null, \"zz\": true}]"
 
 -- someText :: [Doc]
@@ -45,12 +47,11 @@ v3 = decode "[1,2,3,4,54, {\"foo\":1,\"bar\":\"bar\", \"z\": null, \"zz\": true}
 
 main :: IO ()
 main = do
-  putDoc $ encodePretty (fromJust v3)
-  putStr "\n"
-  putDoc $ encodePretty (fromJust v1)
---  putDoc $ nest 2 (text "hello" <$> text "world" <$> "third") <$> text "!"
---  putDoc $ parens (align (vcat (punctuate (space <> comma) someText)))
+  str <- B.getContents
+  putDoc $ encodePretty (fromJust $ (decode str) :: Maybe Value)
 
+  -- putStr "\n"
+  -- putDoc $ encodePretty (fromJust v1)
 
 --  putDoc $ (dullgreen (encodePretty (fromJust v1)))
   -- args <- getArgs
