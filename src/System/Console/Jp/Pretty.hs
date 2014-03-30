@@ -55,7 +55,8 @@ module System.Console.Jp.Pretty (
 ) where
 
 import Data.Aeson (Value(..), ToJSON(..))
-import qualified Data.Aeson.Encode as Aeson
+import qualified Data.Aeson as Aeson
+import Data.Aeson.Encode (encodeToTextBuilder)
 import Data.Function (on)
 import qualified Data.HashMap.Strict as H (toList)
 import Data.List (sortBy, elemIndex)
@@ -157,13 +158,13 @@ fromValue st@PState{..} = go
 
 fromArray :: PState -> [Value] -> Doc
 fromArray st@PState{..} items = pstArrayPrefix <> arrayContent <> pstArraySuffix
-                                where ds = (map (fromValue st) items)
-                                      arrayContent = indent 4 $ (pstCatArray (punctuate' st ds))
+    where ds = (map (fromValue st) items)
+          arrayContent = indent 4 $ (pstCatArray (punctuate' st ds))
 
 fromObject :: PState -> [(Text,Value)] -> Doc
 fromObject st@PState{..} items = pstObjectPrefix <> objectContent <> pstObjectSuffix
-                                      where ds = (map (fromPair st) items)
-                                            objectContent = indent 4 $ (pstCatObject (punctuate' st ds))
+    where ds = (map (fromPair st) items)
+          objectContent = indent 4 $ (pstCatObject (punctuate' st ds))
 
 fromPair :: PState -> (Text,Value) -> Doc
 fromPair st p = (text . unpack $ fst p) <> colon <+> (fromScalar st (snd p))
@@ -173,4 +174,10 @@ punctuate' _ []      = []
 punctuate' _ [d]     = [d]
 punctuate' st@PState{..} (d:ds)  = (pstBeforeSep <> d <> pstAfterSep) : punctuate' st ds
 
-fromScalar st v = text . TL.unpack . toLazyText $ Aeson.encodeToTextBuilder v
+fromScalar :: PState -> Value -> Doc
+fromScalar st v@(Aeson.Number _) = dullmagenta $ scalarToText v 
+fromScalar st v@(Aeson.String _) = dullgreen $ scalarToText v 
+fromScalar st v = scalarToText v
+
+scalarToText :: Value -> Doc
+scalarToText v = text . TL.unpack . toLazyText $ encodeToTextBuilder v
