@@ -70,9 +70,9 @@ import qualified Data.Vector as V (toList)
 import Text.PrettyPrint.ANSI.Leijen
 import qualified Data.Text.Lazy as TL
 
-data PState = PState { pstIndent :: Int
-                     , pstLevel  :: Int
-                     , pstSort   :: [(Text, Value)] -> [(Text, Value)]
+data PState = PState { pstSort   :: [(Text, Value)] -> [(Text, Value)]
+                     , pstBeforeSep :: Doc
+                     , pstAfterSep :: Doc
                      }
 
 data Config = Config
@@ -80,6 +80,10 @@ data Config = Config
       -- ^ Indentation spaces per level of nesting
     , confCompare :: Text -> Text -> Ordering
       -- ^ Function used to sort keys in objects
+    , beforeSep :: String
+      -- ^ The separator displayed before the item
+    , afterSep :: String
+      -- ^ The separator displayed after the item
     }
 
 -- |Sort keys by their order of appearance in the argument list.
@@ -97,7 +101,7 @@ keyOrder ks = comparing $ \k -> fromMaybe maxBound (elemIndex k ks)
 --
 --  > defConfig = Config { confIndent = 4, confSort = mempty }
 defConfig :: Config
-defConfig = Config { confIndent = 4, confCompare = mempty }
+defConfig = Config { confIndent = 4, confCompare = mempty, beforeSep = "", afterSep = ", " }
 
 -- |Encodes JSON as a colored document.
 --
@@ -111,7 +115,7 @@ encodePretty = encodePretty' defConfig
 encodePretty' :: ToJSON a => Config -> a -> Doc
 encodePretty' Config{..} = fromValue st . toJSON
   where
-    st       = PState confIndent 0 condSort
+    st       = PState condSort (string beforeSep) (string afterSep)
     condSort = sortBy (confCompare `on` fst)
 
 fromValue :: PState -> Value -> Doc
@@ -122,7 +126,7 @@ fromValue st@PState{..} = go
     go v          = fromSingleton v
 
 fromArray :: PState -> [Value] -> Doc
-fromArray st items = encloseSep lbracket rbracket comma (map (fromValue st) items)
+fromArray st items = encloseSep' st lbracket rbracket (map (fromValue st) items)
 
 fromObject :: PState -> [(Text, Value)] -> Doc
 fromObject st items = encloseSep lbrace rbrace comma (map (\p -> fromPair p) items)
@@ -132,36 +136,12 @@ fromObject st items = encloseSep lbrace rbrace comma (map (\p -> fromPair p) ite
 fromObject2 st items = semiBraces (map (\p -> fromPair p) items)
     where fromPair p = (text . unpack $ fst p) <> colon <+> (fromValue st (snd p))
 
-encloseSep' :: PState -> Doc -> Doc -> Doc -> [Doc] -> Doc
-encloseSep' = undefined
-
--- encloseSep :: Doc -> Doc -> Doc -> [Doc] -> Doc
--- encloseSep left right sep ds
---     = case ds of
---         []  -> left <> right
---         [d] -> left <> d <> right
---         _   -> align (cat (zipWith (<>) (left : repeat sep) ds) <> right) 
+encloseSep' :: PState -> Doc -> Doc -> [Doc] -> Doc
+encloseSep' st@PState{..} left right ds
+    = case ds of
+        []  -> left <> right
+        [d] -> left <> d <> right
+        _   -> align $ cat (zipWith3 tCat (repeat pstBeforeSep) ds (repeat pstAfterSep))
+    where tCat = (\b d a -> b <> d <> a)
 
 fromSingleton v = text . TL.unpack . toLazyText $ Aeson.encodeToTextBuilder v
-
-fromCompound :: PState
-             -> (Doc, Doc)
-             -> (PState -> a -> Doc)
-             -> [a]
-             -> Doc
-fromCompound st@PState{..} (delimL,delimR) fromItem items = mconcat
-    [ delimL
-    , if null items then mempty
-        else "\n" <> items' <> "\n" <> fromIndent st
-    , delimR
-    ]
-  where
-    items' = mconcat . intersperse ",\n" $
-                map (\item -> fromIndent st' <> fromItem st' item)
-                    items
-    st' = st { pstLevel = pstLevel + 1 }
-
-fromIndent :: PState -> Doc
-fromIndent PState{..} = mconcat $ replicate (pstIndent * pstLevel) " "
-
-
