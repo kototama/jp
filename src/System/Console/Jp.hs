@@ -35,17 +35,18 @@ jp opts nonOpts = do
   mapM_ putStr nonOpts
 
 v1 = decode "{\"foo\":1,\"bar\":\"bar\"}" :: Maybe Value
-v2 = decode "[1,2,3]" :: Maybe [Int]
+v2 = decode "[1,2,3,4,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,5]" :: Maybe [Int]
+v3 = decode "[1,2,3,4,54]" :: Maybe [Int]
+someText = map text ["words","in","a","tuple"]
 
 main :: IO ()
 main = do
-  -- putDoc $ braces (text "Red") <> comma <+> white (text "white") <+> text "and"
-  --                             <+> blue (text "blue") <> char '!' <> linebreak
-  -- putDoc $ blue (text "Nested" <+> dullyellow (text "colors") <+> text "example")
-  --               <> linebreak
-  putDoc $ red (encodePretty (fromJust v2))
-  putDoc $ (dullgreen (encodePretty (fromJust v1)))
-  -- putDoc $ braces ((nest 2 (hardline <> (dquotes (text "foo")) <+> colon <+> (dquotes (text "bar"))) <> comma) <> hardline)
+--  putDoc $ red (encodePretty (fromJust v3))
+--  putDoc $ nest 2 (text "hello" <$> text "world" <$> "third") <$> text "!"
+  putDoc $ parens (align (vcat (punctuate comma someText)))
+
+
+--  putDoc $ (dullgreen (encodePretty (fromJust v1)))
   -- args <- getArgs
   -- case getOpt Permute options args of
   --   (o,n,[] ) -> do

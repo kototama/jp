@@ -118,7 +118,7 @@ fromValue :: PState -> Value -> Doc
 fromValue st@PState{..} = go
   where
     go (Array v)  = fromArray st (V.toList v)
-    go (Object m) = fromObject st (pstSort (H.toList m))
+    go (Object m) = fromObject2 st (pstSort (H.toList m))
     go v          = fromSingleton v
 
 fromArray :: PState -> [Value] -> Doc
@@ -127,6 +127,20 @@ fromArray st items = encloseSep lbracket rbracket comma (map (fromValue st) item
 fromObject :: PState -> [(Text, Value)] -> Doc
 fromObject st items = encloseSep lbrace rbrace comma (map (\p -> fromPair p) items)
     where fromPair p = (text . unpack $ fst p) <> colon <+> (fromValue st (snd p))
+
+
+fromObject2 st items = semiBraces (map (\p -> fromPair p) items)
+    where fromPair p = (text . unpack $ fst p) <> colon <+> (fromValue st (snd p))
+
+encloseSep' :: PState -> Doc -> Doc -> Doc -> [Doc] -> Doc
+encloseSep' = undefined
+
+-- encloseSep :: Doc -> Doc -> Doc -> [Doc] -> Doc
+-- encloseSep left right sep ds
+--     = case ds of
+--         []  -> left <> right
+--         [d] -> left <> d <> right
+--         _   -> align (cat (zipWith (<>) (left : repeat sep) ds) <> right) 
 
 fromSingleton v = text . TL.unpack . toLazyText $ Aeson.encodeToTextBuilder v
 
