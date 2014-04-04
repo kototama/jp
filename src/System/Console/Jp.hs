@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module System.Console.Jp 
+module System.Console.Jp
 (
  main
 ) where
@@ -19,13 +19,14 @@ import Data.Maybe (fromJust)
 
 import Data.Aeson
 
+import System.Console.Jp.Interpreter
 
 -- getUsage :: IO String
 -- getUsage = do
 --   pn <- getProgName
 --   return $ usageInfo ("Usage: " ++ pn ++ "[<option>]") options
 
--- compilerOpts :: [String] -> IO 
+-- compilerOpts :: [String] -> IO
 
 -- jp :: [Options] -> [String] -> IO ()
 -- jp opts nonOpts = do
@@ -34,7 +35,7 @@ import Data.Aeson
 --   mapM_ putStr nonOpts
 
 v1 :: Maybe Value
-v1 = decode "{\"foo\":1,\"bar\":\"bar\", \"z\": null, \"zz\": true, \"emb\": {\"foo\":1,\"bar\":\"bar\", \"z\": null, \"zz\": true}}" 
+v1 = decode "{\"foo\":1,\"bar\":\"bar\", \"z\": null, \"zz\": true, \"emb\": {\"foo\":1,\"bar\":\"bar\", \"z\": null, \"zz\": true}}"
 
 -- v2 :: Maybe [Int]
 -- v2 = decode "[1,2,3,4,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,5]"
@@ -47,8 +48,9 @@ v3 = decode "[1,2,3,4,54, {\"foo\":1,\"bar\":\"bar\", \"z\": null, \"zz\": true}
 
 main :: IO ()
 main = do
-  str <- B.getContents
-  putDoc $ encodePretty (fromJust $ (decode str) :: Maybe Value)
+  -- str <- B.getContents
+  -- putDoc $ encodePretty (fromJust $ (decode str) :: Maybe Value)
+  runJpInterpreter
 
   -- putStr "\n"
   -- putDoc $ encodePretty (fromJust v1)
