@@ -1,5 +1,5 @@
 module System.Console.Jp.Interpreter
-(runJpInterpreter, runAesonLensInterpreter)
+(runAesonLensInterpreter)
 where
 
 import Control.Monad
@@ -11,17 +11,15 @@ import qualified Data.Aeson as Aeson
 
 import Data.Maybe (fromJust)
 
-runJpInterpreter :: IO ()
-runJpInterpreter = do r <- runInterpreter testHint
-                      case r of
-                        Left err -> printInterpreterError err
-                        Right () -> putStrLn "that's all folks"
-
-runAesonLensInterpreter :: String -> String -> IO Aeson.Value
+runAesonLensInterpreter :: String -> String -> IO (Either String Aeson.Value)
 runAesonLensInterpreter input expr = do r <- runInterpreter $ aesonLensInterpreter input expr
                                         case r of
-                                          Left err -> return Aeson.Null
-                                          Right x -> return x
+                                          Right x -> return $ Right x
+                                          Left (WontCompile errors)  -> 
+                                              return $ Left ("Error during compilation:\n\n" ++ errorMsgs)
+                                                  where errorMsgs = unwords $ map errMsg errors
+
+
 
 aesonLensInterpreter :: String -> String -> Interpreter Aeson.Value
 aesonLensInterpreter input expr = do

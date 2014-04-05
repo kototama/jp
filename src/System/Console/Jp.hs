@@ -53,8 +53,10 @@ main = do
   -- runJpInterpreter
   args <- getArgs
   input <- getLine
-  v <- runAesonLensInterpreter input (head args)
-  putStr $ (show v)
+  res <- runAesonLensInterpreter input (head args)
+  case res of
+    Right v -> putStr $ (show v)
+    Left errMsg -> putStr $ errMsg  
 
   -- putStr "\n"
   -- putDoc $ encodePretty (fromJust v1)
