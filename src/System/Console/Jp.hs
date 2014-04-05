@@ -50,7 +50,9 @@ main :: IO ()
 main = do
   -- str <- B.getContents
   -- putDoc $ encodePretty (fromJust $ (decode str) :: Maybe Value)
-  runJpInterpreter
+  -- runJpInterpreter
+  v <- runAesonLensInterpreter
+  putStr $ (show v)
 
   -- putStr "\n"
   -- putDoc $ encodePretty (fromJust v1)

@@ -1,11 +1,12 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 
+
 -- |Aeson-compatible colored pretty-printing of JSON 'Value's.
 -- Adapted from Data.Aeson.Encode.Pretty
 module System.Console.Jp.Pretty (
     -- * Simple Pretty-Printing
     encodePretty,
-
+    
     -- * Pretty-Printing with Configuration Options
     encodePretty',
     Config (..), defConfig,
@@ -216,3 +217,5 @@ fromScalar _ v = scalarToText v
 
 scalarToText :: Value -> Doc
 scalarToText v = text . TL.unpack . toLazyText $ encodeToTextBuilder v
+
+
