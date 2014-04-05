@@ -5,10 +5,10 @@ module System.Console.Jp
  main
 ) where
 
--- import System.Environment (getProgName)
+import System.Environment (getArgs)
 -- import System.Console.GetOpt
 
-import qualified Data.ByteString.Lazy as B
+-- import qualified Data.ByteString.Lazy as B
 
 import Text.PrettyPrint.ANSI.Leijen
 
@@ -51,7 +51,9 @@ main = do
   -- str <- B.getContents
   -- putDoc $ encodePretty (fromJust $ (decode str) :: Maybe Value)
   -- runJpInterpreter
-  v <- runAesonLensInterpreter "[{\"someObject\" : { \"version\" : [1, 42, 0] }}]"  " ^? nth 0 . key \"someObject\" . key \"version\" . nth 1"
+  args <- getArgs
+  input <- getLine
+  v <- runAesonLensInterpreter input (head args)
   putStr $ (show v)
 
   -- putStr "\n"
