@@ -16,8 +16,11 @@ runAesonLensInterpreter input expr = do r <- runInterpreter $ aesonLensInterpret
                                         case r of
                                           Right x -> return $ Right x
                                           Left (WontCompile errors)  -> 
-                                              return $ Left ("Error during compilation:\n\n" ++ errorMsgs)
+                                              return $ Left ("Error in expression:\n\n" ++ errorMsgs)
                                                   where errorMsgs = unwords $ map errMsg errors
+                                          Left (UnknownError msg) -> return $ Left ("Unknown error:\n\n" ++ msg)
+                                          Left (NotAllowed msg) -> return $ Left ("Not allowed:\n\n" ++ msg)
+                                          Left (GhcException msg) -> return $ Left ("GhcException:\n\n" ++ msg)
 
 
 
