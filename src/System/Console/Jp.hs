@@ -8,7 +8,8 @@ module System.Console.Jp
 import System.Environment (getArgs)
 -- import System.Console.GetOpt
 
--- import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString.Lazy.Char8 as C
 
 import Text.PrettyPrint.ANSI.Leijen
 
@@ -55,9 +56,10 @@ main = do
   input <- getLine
   res <- runAesonLensInterpreter input (head args)
   case res of
-    Right v -> putStr $ (show v)
+    Right v -> putStr v
     Left errMsg -> putStr $ errMsg  
 
+  
   -- putStr "\n"
   -- putDoc $ encodePretty (fromJust v1)
 

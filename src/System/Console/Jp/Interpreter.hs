@@ -4,12 +4,12 @@ where
 
 import Control.Monad
 import Language.Haskell.Interpreter
-import Language.Haskell.Interpreter.Extension
-import qualified Data.Text.Lazy as TL
+-- import Language.Haskell.Interpreter.Extension
+-- import qualified Data.Text.Lazy as TL
 
-import qualified Data.Aeson as Aeson
+import Data.Aeson
 
-runAesonLensInterpreter :: String -> String -> IO (Either String Aeson.Value)
+runAesonLensInterpreter :: String -> String -> IO (Either String String)
 runAesonLensInterpreter input expr = do r <- runInterpreter $ aesonLensInterpreter input expr
                                         case r of
                                           Right (Just x) -> return $ Right x
@@ -23,11 +23,11 @@ runAesonLensInterpreter input expr = do r <- runInterpreter $ aesonLensInterpret
 
 
 
-aesonLensInterpreter :: String -> String -> Interpreter (Maybe Aeson.Value)
+aesonLensInterpreter :: String -> String -> Interpreter (Maybe String)
 aesonLensInterpreter input expr = do
       setImportsQ [("Prelude", Nothing), ("Data.Map", Just "M"), ("Control.Lens", Nothing), ("Data.Aeson.Lens", Nothing), ("Data.Aeson", Nothing)]
       set [languageExtensions := [OverloadedStrings]]
 
       let interpExpr = "(" ++ (show input) ++ " :: String)" ++ expr
-      a <- interpret interpExpr (as :: Maybe Aeson.Value)
-      return $ a
+      v <- eval interpExpr
+      return $ Just v
