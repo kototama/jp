@@ -51,7 +51,7 @@ main = do
   -- str <- B.getContents
   -- putDoc $ encodePretty (fromJust $ (decode str) :: Maybe Value)
   -- runJpInterpreter
-  v <- runAesonLensInterpreter
+  v <- runAesonLensInterpreter "[{\"someObject\" : { \"version\" : [1, 42, 0] }}]"  " ^? nth 0 . key \"someObject\" . key \"version\" . nth 1"
   putStr $ (show v)
 
   -- putStr "\n"

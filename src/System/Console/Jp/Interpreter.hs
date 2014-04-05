@@ -17,20 +17,19 @@ runJpInterpreter = do r <- runInterpreter testHint
                         Left err -> printInterpreterError err
                         Right () -> putStrLn "that's all folks"
 
-runAesonLensInterpreter :: IO Aeson.Value
-runAesonLensInterpreter = do r <- runInterpreter aesonLensInterpreter
-                             case r of
-                               Left err -> return Aeson.Null
-                               Right x -> return x
+runAesonLensInterpreter :: String -> String -> IO Aeson.Value
+runAesonLensInterpreter input expr = do r <- runInterpreter $ aesonLensInterpreter input expr
+                                        case r of
+                                          Left err -> return Aeson.Null
+                                          Right x -> return x
 
-aesonLensInterpreter :: Interpreter Aeson.Value
-aesonLensInterpreter = do
+aesonLensInterpreter :: String -> String -> Interpreter Aeson.Value
+aesonLensInterpreter input expr = do
       setImportsQ [("Prelude", Nothing), ("Data.Map", Just "M"), ("Control.Lens", Nothing), ("Data.Aeson.Lens", Nothing), ("Data.Aeson", Nothing)]
       set [languageExtensions := [OverloadedStrings]]
 
-      let userExpr = "[{\"someObject\" : { \"version\" : [1, 42, 0] }}]"
-      let expr3 = "(" ++ (show userExpr) ++ " :: String)" ++ " ^? nth 0 . key \"someObject\" . key \"version\" . nth 1"
-      a <- interpret expr3 (as :: Maybe Aeson.Value)
+      let interpExpr = "(" ++ (show input) ++ " :: String)" ++ expr
+      a <- interpret interpExpr (as :: Maybe Aeson.Value)
       return $ fromJust a
 
 testHint :: Interpreter ()
