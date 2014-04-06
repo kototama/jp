@@ -56,7 +56,7 @@ main = do
   input <- getLine
   res <- runAesonLensInterpreter input (head args)
   case res of
-    Right v -> putStr v
+    Right v -> putDoc (encodePretty v)
     Left errMsg -> putStr $ errMsg  
 
   

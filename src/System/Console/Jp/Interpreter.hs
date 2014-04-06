@@ -9,7 +9,7 @@ import Language.Haskell.Interpreter
 
 import Data.Aeson
 
-runAesonLensInterpreter :: String -> String -> IO (Either String String)
+runAesonLensInterpreter :: String -> String -> IO (Either String Value)
 runAesonLensInterpreter input expr = do r <- runInterpreter $ aesonLensInterpreter input expr
                                         case r of
                                           Right (Just x) -> return $ Right x
@@ -23,11 +23,11 @@ runAesonLensInterpreter input expr = do r <- runInterpreter $ aesonLensInterpret
 
 
 
-aesonLensInterpreter :: String -> String -> Interpreter (Maybe String)
+aesonLensInterpreter :: String -> String -> Interpreter (Maybe Value)
 aesonLensInterpreter input expr = do
       setImportsQ [("Prelude", Nothing), ("Data.Map", Just "M"), ("Control.Lens", Nothing), ("Data.Aeson.Lens", Nothing), ("Data.Aeson", Nothing)]
       set [languageExtensions := [OverloadedStrings]]
 
-      let interpExpr = "(" ++ (show input) ++ " :: String)" ++ expr
-      v <- eval interpExpr
+      let interpExpr = "toJSON $ (" ++ (show input) ++ " :: String)" ++ expr
+      v <- interpret interpExpr (as :: Value)
       return $ Just v
