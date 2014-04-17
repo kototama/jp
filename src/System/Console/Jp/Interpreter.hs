@@ -25,9 +25,14 @@ runAesonLensInterpreter input expr = do r <- runInterpreter $ aesonLensInterpret
 
 aesonLensInterpreter :: String -> String -> Interpreter (Maybe Value)
 aesonLensInterpreter input expr = do
-      setImportsQ [("Prelude", Nothing), ("Data.Map", Just "M"), ("Control.Lens", Nothing), ("Data.Aeson.Lens", Nothing), ("Data.Aeson", Nothing)]
+  -- todo read this from a config file
+      setImportsQ [("Prelude", Nothing), 
+                   ("Data.Map", Just "M"), 
+                   ("Control.Lens", Nothing), 
+                   ("Data.Aeson.Lens", Nothing), 
+                   ("Data.Aeson", Nothing)]
       set [languageExtensions := [OverloadedStrings]]
 
-      let interpExpr = "toJSON $ (" ++ (show input) ++ " :: String)" ++ expr
+      let interpExpr = "toJSON $ (" ++ (show input) ++ " :: String) ^? _Value" ++ expr
       v <- interpret interpExpr (as :: Value)
       return $ Just v
