@@ -5,15 +5,14 @@ module System.Console.Jp
  main
 ) where
 
-import System.Environment (getArgs)
--- import System.Console.GetOpt
+import System.Environment (getArgs, getProgName)
+import System.Console.GetOpt (usageInfo)
+import System.Exit (exitFailure,exitSuccess)
 
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Lazy.Char8 as C
 
 import Text.PrettyPrint.ANSI.Leijen
-
--- import System.Console.Jp.Options
 import System.Console.Jp.Pretty
 
 import Data.Maybe (fromJust)
@@ -49,19 +48,31 @@ v3 = decode "[1,2,3,4,54, {\"foo\":1,\"bar\":\"bar\", \"z\": null, \"zz\": true}
 -- someText :: [Doc]
 -- someText = map text ["words","in","a","tuple"]
 
+getUsage :: IO String
+getUsage = do
+    pn <- getProgName
+    return $ usageInfo ("Usage: " ++ pn ++ " [<options>] [<file>]") options
+
 main :: IO ()
 main = do
   -- str <- B.getContents
   -- putDoc $ encodePretty (fromJust $ (decode str) :: Maybe Value)
   -- runJpInterpreter
   args <- getArgs
-  options <- compileOpts args
-  putStr $ show options
-  input <- getLine
-  res <- runAesonLensInterpreter input (head args)
-  case res of
-    Right v -> putDoc (encodePretty v)
-    Left errMsg -> putStr $ errMsg
+  case compileOpts args of
+    Left errs ->
+      mapM_ putStr errs
+    Right (Options {optPipe = False}, []) -> do
+      getUsage >>= putStr
+      exitSuccess
+    Right (opts, files) ->
+      putStr $ "files" ++ (show files) ++ " options " ++ (show opts)
+      
+  -- input <- getLine
+  -- res <- runAesonLensInterpreter input (head args)
+  -- case res of
+  --   Right v -> putDoc (encodePretty v)
+  --   Left errMsg -> putStr $ errMsg
 
   
   -- putStr "\n"

@@ -1,6 +1,6 @@
 
 module System.Console.Jp.Options 
-(compileOpts)
+(Options(..), options, compileOpts)
 where
 
 import qualified Data.ByteString.Lazy as B
@@ -12,26 +12,29 @@ data Options = Options { optExpr :: Maybe B.ByteString
                        , optVersion :: Bool
                        , optHelp :: Bool
                        , optModuleFile :: Maybe FP.FilePath
-                       , optPrettyPrint :: Bool
+                       , optCompact :: Bool
+                       , optColor :: Bool
+                       , optPipe :: Bool
                        } deriving Show
 
 defaultOptions :: Options
-defaultOptions = Options { optExpr = Nothing
-                         , optVersion = False
-                         , optHelp = False
-                         , optModuleFile = Just "/tmp/"
-                         , optPrettyPrint = True
+defaultOptions = Options { optExpr = Nothing,
+                           optVersion = False,
+                           optHelp = False,
+                           optModuleFile = Just "/tmp/",
+                           optCompact = False,
+                           optColor = True,
+                           optPipe = False
                          }
 
 options :: [OptDescr (Options -> Options)]
-options = [Option ['p'] ["pretty-print"] (NoArg prettyPrintOpt) prettyPrintDesc]  
-    where prettyPrintDesc = "Output the data without any transformations. Can be used to pretty-print JSON data."
-          prettyPrintOpt o = o { optPrettyPrint = True }
+options = [Option ['p'] ["pipe"] (NoArg pipeOpt) pipeDesc]  
+    where pipeDesc = "Reads input from STDIN and outputs to STDOUT"
+          pipeOpt o = o { optPipe = True }
 
 
-compileOpts :: [String] -> IO (Options, [String])
+compileOpts :: [String] -> Either [String] (Options, [String])
 compileOpts argv =
     case getOpt Permute options argv of
          (o,n,[]  ) -> return (foldl (flip id) defaultOptions o, n)
-         (_,_,errs) -> ioError (userError (concat errs ++ usageInfo header options))
-     where header = "Usage: ic [OPTION...] files..."
+         (_,_,errs) -> Left errs
