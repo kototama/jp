@@ -15,7 +15,8 @@ import qualified Data.ByteString.Lazy.Char8 as C
 import Text.PrettyPrint.ANSI.Leijen
 import System.Console.Jp.Pretty
 
-import Data.Maybe (fromJust)
+import Data.Monoid (mconcat)
+import Control.Monad (join)
 
 import Data.Aeson
 
@@ -53,6 +54,9 @@ getUsage = do
     pn <- getProgName
     return $ usageInfo ("Usage: " ++ pn ++ " [<options>] [<file>]") options
 
+processInput :: Options -> String -> IO ()
+processInput opts input = putStr input
+
 main :: IO ()
 main = do
   -- str <- B.getContents
@@ -60,13 +64,19 @@ main = do
   -- runJpInterpreter
   args <- getArgs
   case compileOpts args of
-    Left errs ->
-      mapM_ putStr errs
+    Left _ -> do
+      getUsage >>= putStr
+      exitFailure
     Right (Options {optPipe = False}, []) -> do
       getUsage >>= putStr
       exitSuccess
-    Right (opts, files) ->
-      putStr $ "files" ++ (show files) ++ " options " ++ (show opts)
+    Right (opts@Options {optPipe = True}, _) -> do
+      input <- getContents
+      processInput opts input
+    Right (opts, files) -> do
+      input <- fmap concat . mapM readFile $ files
+      processInput opts input
+--      putStr $ "files" ++ (show files) ++ " options " ++ (show opts)
       
   -- input <- getLine
   -- res <- runAesonLensInterpreter input (head args)
