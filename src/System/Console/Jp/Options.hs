@@ -3,12 +3,11 @@ module System.Console.Jp.Options
 (Options(..), options, compileOpts)
 where
 
-import qualified Data.ByteString.Lazy as B
 import qualified System.FilePath as FP
 
 import System.Console.GetOpt
 
-data Options = Options { optExpr :: Maybe B.ByteString
+data Options = Options { optExpr :: Maybe String
                        , optVersion :: Bool
                        , optHelp :: Bool
                        , optModuleFile :: Maybe FP.FilePath
@@ -28,9 +27,12 @@ defaultOptions = Options { optExpr = Nothing,
                          }
 
 options :: [OptDescr (Options -> Options)]
-options = [Option ['p'] ["pipe"] (NoArg pipeOpt) pipeDesc]  
+options = [ Option ['p'] ["pipe"] (NoArg pipeOpt) pipeDesc
+          , Option ['e'] ["expr"] (ReqArg exprOpt "<expr>") exprDesc]
     where pipeDesc = "Reads input from STDIN and outputs to STDOUT"
           pipeOpt o = o { optPipe = True }
+          exprDesc = "A lens expression used to transform the input"
+          exprOpt expr o = o { optExpr = Just expr }
 
 
 compileOpts :: [String] -> Either [String] (Options, [String])

@@ -29,7 +29,7 @@ data JsonInput = JsonInput String Value
 
 processJSON :: Options -> JsonInput -> IO ()
 processJSON Options{ optCompact = False, optColor = True, optExpr = Just expr} (JsonInput s _) = do
-  res <- runAesonLensInterpreter s (C.unpack expr)
+  res <- runAesonLensInterpreter s expr
   case res of
      Right v -> putDoc (encodePretty v)
      Left errMsg -> do
