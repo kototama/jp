@@ -2,7 +2,6 @@ module System.Console.Jp.Interpreter
 (runAesonLensInterpreter)
 where
 
-import Control.Monad
 import Language.Haskell.Interpreter
 -- import Language.Haskell.Interpreter.Extension
 -- import qualified Data.Text.Lazy as TL

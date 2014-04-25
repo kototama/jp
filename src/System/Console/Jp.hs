@@ -22,6 +22,8 @@ import Data.Aeson
 
 import System.Console.Jp.Interpreter
 
+import System.Console.Jp.Options
+
 -- getUsage :: IO String
 -- getUsage = do
 --   pn <- getProgName
@@ -53,11 +55,13 @@ main = do
   -- putDoc $ encodePretty (fromJust $ (decode str) :: Maybe Value)
   -- runJpInterpreter
   args <- getArgs
+  options <- compileOpts args
+  putStr $ show options
   input <- getLine
   res <- runAesonLensInterpreter input (head args)
   case res of
     Right v -> putDoc (encodePretty v)
-    Left errMsg -> putStr $ errMsg  
+    Left errMsg -> putStr $ errMsg
 
   
   -- putStr "\n"
