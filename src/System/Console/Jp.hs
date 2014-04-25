@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 
 module System.Console.Jp
 (
@@ -24,19 +24,6 @@ import System.Console.Jp.Interpreter
 
 import System.Console.Jp.Options
 
--- getUsage :: IO String
--- getUsage = do
---   pn <- getProgName
---   return $ usageInfo ("Usage: " ++ pn ++ "[<option>]") options
-
--- compilerOpts :: [String] -> IO
-
--- jp :: [Options] -> [String] -> IO ()
--- jp opts nonOpts = do
---   putStr "here"
---   putStr $ show opts
---   mapM_ putStr nonOpts
-
 v1 :: Maybe Value
 v1 = decode "{\"foo\":1,\"bar\":\"bar\", \"z\": null, \"zz\": true, \"emb\": {\"foo\":1,\"bar\":\"bar\", \"z\": null, \"zz\": true}}"
 
@@ -54,8 +41,33 @@ getUsage = do
     pn <- getProgName
     return $ usageInfo ("Usage: " ++ pn ++ " [<options>] [<file>]") options
 
+data JsonInput = JsonInput String Value
+
+processJSON :: Options -> JsonInput -> IO ()
+processJSON Options{ optCompact = False, optColor = True, optExpr = Just expr} (JsonInput s _) = do
+  res <- runAesonLensInterpreter s (C.unpack expr)
+  case res of
+     Right v -> putDoc (encodePretty v)
+     Left errMsg -> do
+       putStr $ errMsg
+       exitFailure
+
+processJSON Options{ optCompact = False, optColor = True, optExpr = Nothing} (JsonInput _ v) = do
+  putDoc $ encodePretty v
+
+processJSON _ _ = do
+  getUsage >>= putStr
+  exitSuccess
+
 processInput :: Options -> String -> IO ()
-processInput opts input = putStr input
+processInput opts input =
+  case eitherDecode (C.pack input) of
+    Left errMsg -> do
+      putStr $ errMsg
+      exitFailure
+    Right v ->
+      processJSON opts (JsonInput input v)
+
 
 main :: IO ()
 main = do
@@ -74,6 +86,7 @@ main = do
       input <- getContents
       processInput opts input
     Right (opts, files) -> do
+      -- TODO: better repeat the process instead of concat
       input <- fmap concat . mapM readFile $ files
       processInput opts input
 --      putStr $ "files" ++ (show files) ++ " options " ++ (show opts)
