@@ -2,11 +2,11 @@
 
 ## Usage
 
-`
-source ./scripts/sandbox.sh
-cat ./tests/simple.json | sandbox exec ./dist/build/jp/jp -p 
-sandbox exec ./dist/build/jp/jp ./tests/obj1.json -e '<&> members . _Number *~ 10'
-`
+
+    source ./scripts/sandbox.sh
+    cat ./tests/simple.json | sandbox exec ./dist/build/jp/jp -p 
+    sandbox exec ./dist/build/jp/jp ./tests/obj1.json -e '<&> members . _Number *~ 10'
+
 
 ## Pretty printing
 
