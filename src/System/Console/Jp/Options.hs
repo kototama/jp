@@ -14,6 +14,7 @@ data Options = Options { optExpr :: Maybe String
                        , optCompact :: Bool
                        , optColor :: Bool
                        , optPipe :: Bool
+                       , optMinimize :: Bool
                        } deriving Show
 
 defaultOptions :: Options
@@ -23,16 +24,20 @@ defaultOptions = Options { optExpr = Nothing,
                            optModuleFile = Just "/tmp/",
                            optCompact = False,
                            optColor = True,
-                           optPipe = False
+                           optPipe = False,
+                           optMinimize = False
                          }
 
 options :: [OptDescr (Options -> Options)]
 options = [ Option ['p'] ["pipe"] (NoArg pipeOpt) pipeDesc
-          , Option ['e'] ["expr"] (ReqArg exprOpt "<expr>") exprDesc]
+          , Option ['e'] ["expr"] (ReqArg exprOpt "<expr>") exprDesc
+          , Option ['m'] ["minimize"] (NoArg minimizeOpt) minimizeDesc]
     where pipeDesc = "Reads input from STDIN and outputs to STDOUT"
           pipeOpt o = o { optPipe = True }
           exprDesc = "A lens expression used to transform the input"
           exprOpt expr o = o { optExpr = Just expr }
+          minimizeDesc = "Minimizes the output"
+          minimizeOpt o = o { optMinimize = True }
 
 
 compileOpts :: [String] -> Either [String] (Options, [String])
