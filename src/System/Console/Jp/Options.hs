@@ -11,7 +11,6 @@ data Options = Options { optExpr :: Maybe String
                        , optVersion :: Bool
                        , optHelp :: Bool
                        , optModuleFile :: Maybe FP.FilePath
-                       , optCompact :: Bool
                        , optColor :: Bool
                        , optPipe :: Bool
                        , optMinimize :: Bool
@@ -22,7 +21,6 @@ defaultOptions = Options { optExpr = Nothing,
                            optVersion = False,
                            optHelp = False,
                            optModuleFile = Just "/tmp/",
-                           optCompact = False,
                            optColor = True,
                            optPipe = False,
                            optMinimize = False
