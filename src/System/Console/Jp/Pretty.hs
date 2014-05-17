@@ -9,7 +9,8 @@ module System.Console.Jp.Pretty (
     
     -- * Pretty-Printing with Configuration Options
     encodePretty',
-    Config (..), defConfig,
+    Config (..), defConfig, compactConfig,
+    
     -- ** Sorting Keys in Objects
     -- |With the Aeson library, the order of keys in objects is undefined due
     --  objects being implemented as HashMaps. To allow user-specified key
@@ -141,7 +142,7 @@ defConfig = Config { confIndent = 4
                    , beforeSep = empty
                    , afterSep = (comma <> empty)
                    , pairSep = (colon <> space)
-                   , catObject = vcat
+                   , catObject = cat
                    , catArray = cat
                    , arrayPrefix = (lbracket <$> empty)
                    , arraySuffix = (empty <$> rbracket)
@@ -153,6 +154,16 @@ defConfig = Config { confIndent = 4
                    , nullFn = white
                    }
 
+compactConfig :: Config
+compactConfig = defConfig { confIndent = 0,
+                            arrayPrefix = lbracket,
+                            arraySuffix = rbracket,
+                            objectPrefix = lbrace,
+                            objectSuffix = rbrace,
+                            catObject = hcat,
+                            catArray = hcat
+                          }
+                
 -- |Encodes JSON as a colored document.
 --
 --

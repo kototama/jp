@@ -39,7 +39,7 @@ processJSON Options{ optColor = True, optExpr = Just expr, optMinimize = False} 
 processJSON Options{ optExpr = Just expr, optMinimize = True} (JsonInput s _) = do
   res <- runAesonLensInterpreter s expr
   case res of
-     Right v -> putJsonCompact v
+     Right v -> putJsonMinimized v
      Left errMsg -> do
        putStr $ errMsg
        exitFailure
@@ -48,15 +48,15 @@ processJSON Options{ optColor = True, optExpr = Nothing, optMinimize = False} (J
   putDoc $ encodePretty v
 
 processJSON Options{ optColor = True, optExpr = Nothing, optMinimize = True} (JsonInput _ v) = do
-  putJsonCompact v
+  putJsonMinimized v
 
 processJSON _ _ = do
   getUsage >>= putStr
   exitSuccess
 
-putJsonCompact :: Value -> IO ()
-putJsonCompact v = putStr . (flip displayS "") $ doc
-    where doc = renderCompact (encodePretty v)
+putJsonMinimized :: Value -> IO ()
+putJsonMinimized v = putStr . (flip displayS "") $ doc
+    where doc = renderCompact (encodePretty' compactConfig v)
 
 processInput :: Options -> String -> IO ()
 processInput opts input =
