@@ -28,7 +28,7 @@ getUsage = do
 data JsonInput = JsonInput String Value
 
 processJSON :: Options -> JsonInput -> IO ()
-processJSON Options{ optCompact = False, optColor = True, optExpr = Just expr} (JsonInput s _) = do
+processJSON Options{ optColor = True, optExpr = Just expr, optMinimize = False} (JsonInput s _) = do
   res <- runAesonLensInterpreter s expr
   case res of
      Right v -> putDoc (encodePretty v)
@@ -36,12 +36,27 @@ processJSON Options{ optCompact = False, optColor = True, optExpr = Just expr} (
        putStr $ errMsg
        exitFailure
 
-processJSON Options{ optCompact = False, optColor = True, optExpr = Nothing} (JsonInput _ v) = do
+processJSON Options{ optExpr = Just expr, optMinimize = True} (JsonInput s _) = do
+  res <- runAesonLensInterpreter s expr
+  case res of
+     Right v -> putJsonCompact v
+     Left errMsg -> do
+       putStr $ errMsg
+       exitFailure
+
+processJSON Options{ optColor = True, optExpr = Nothing, optMinimize = False} (JsonInput _ v) = do
   putDoc $ encodePretty v
+
+processJSON Options{ optColor = True, optExpr = Nothing, optMinimize = True} (JsonInput _ v) = do
+  putJsonCompact v
 
 processJSON _ _ = do
   getUsage >>= putStr
   exitSuccess
+
+putJsonCompact :: Value -> IO ()
+putJsonCompact v = putStr . (flip displayS "") $ doc
+    where doc = renderCompact (encodePretty v)
 
 processInput :: Options -> String -> IO ()
 processInput opts input =
