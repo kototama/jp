@@ -34,7 +34,7 @@ options = [ Option ['p'] ["pipe"] (NoArg pipeOpt) pipeDesc
           pipeOpt o = o { optPipe = True }
           exprDesc = "A lens expression used to transform the input"
           exprOpt expr o = o { optExpr = Just expr }
-          minimizeDesc = "Minimizes the output"
+          minimizeDesc = "Minimizes the output."
           minimizeOpt o = o { optMinimize = True }
 
 
