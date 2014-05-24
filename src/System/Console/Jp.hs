@@ -71,7 +71,8 @@ processInput opts input =
 main :: IO ()
 main = do
   args <- getArgs
-  case compileOpts args of
+  o <- calculateOpts args
+  case o of
     Left _ -> do
       getUsage >>= putStr
       exitFailure

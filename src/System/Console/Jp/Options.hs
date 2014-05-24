@@ -1,16 +1,16 @@
-
 module System.Console.Jp.Options 
-(Options(..), options, compileOpts)
+(Options(..), options, calculateOpts)
 where
 
-import qualified System.FilePath as FP
+import System.FilePath ((</>))
+import System.Directory (getHomeDirectory)
 
 import System.Console.GetOpt
 
 data Options = Options { optExpr :: Maybe String
                        , optVersion :: Bool
                        , optHelp :: Bool
-                       , optModuleFile :: Maybe FP.FilePath
+                       , optModulesFile :: Maybe FilePath
                        , optColor :: Bool
                        , optPipe :: Bool
                        , optMinimize :: Bool
@@ -20,7 +20,7 @@ defaultOptions :: Options
 defaultOptions = Options { optExpr = Nothing,
                            optVersion = False,
                            optHelp = False,
-                           optModuleFile = Just "/tmp/",
+                           optModulesFile = Nothing,
                            optColor = True,
                            optPipe = False,
                            optMinimize = False
@@ -41,5 +41,18 @@ options = [ Option ['p'] ["pipe"] (NoArg pipeOpt) pipeDesc
 compileOpts :: [String] -> Either [String] (Options, [String])
 compileOpts argv =
     case getOpt Permute options argv of
-         (o,n,[]  ) -> return (foldl (flip id) defaultOptions o, n)
+         (o,n,[]) -> return (foldl (flip id) defaultOptions o, n)
          (_,_,errs) -> Left errs
+
+calculateOpts :: [String] -> IO (Either [String] (Options, [String]))
+calculateOpts argv = do
+  homeDir <- getHomeDirectory
+  case compileOpts argv of
+    Left errs -> return $ Left errs
+    Right (o,n) -> return $ Right (o {
+      optModulesFile = Just $ homeDir
+                       </> ".config"
+                       </> "jp"
+                       </> "modules"
+      }, n)
+
