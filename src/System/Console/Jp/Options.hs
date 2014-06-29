@@ -44,6 +44,7 @@ compileOpts argv =
          (o,n,[]) -> return (foldl (flip id) defaultOptions o, n)
          (_,_,errs) -> Left errs
 
+-- | Compute the command-line options and a path for the modules file
 calculateOpts :: [String] -> IO (Either [String] (Options, [String]))
 calculateOpts argv = do
   homeDir <- getHomeDirectory
