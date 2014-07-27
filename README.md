@@ -10,7 +10,7 @@ can be filtered and transformed with Haskell Lens expressions.
 
         source ./scripts/sandbox.sh
   
-## Usage
+## Example of usages
 
     cat ./tests/simple.json | sandbox exec ./dist/build/jp/jp -p 
     sandbox exec ./dist/build/jp/jp ./tests/obj1.json -e '<&> members . _Number *~ 10'
