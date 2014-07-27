@@ -85,9 +85,6 @@ calculateState args = do
     Left _ -> do
       getUsage >>= putStr
       exitSuccess
-    Right (Options {optPipe = False}, []) -> do
-      getUsage >>= putStr
-      exitSuccess
     Right (ops, fls) -> do
       x <- getModules $ optModulesFile ops
       case x of
@@ -104,6 +101,9 @@ main = do
   args <- getArgs
   st <- calculateState args
   case st of
+    St { options = Options {optPipe = False}, files = []} -> do
+      getUsage >>= putStr
+      exitSuccess
     St { options = Options {optPipe = True}, files = []} -> do
       input <- getContents
       processInput st input
