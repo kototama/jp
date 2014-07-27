@@ -1,0 +1,5 @@
+[
+ ("Data.Map", Just "M"), 
+ ("Control.Lens", Nothing), 
+ ("Data.Aeson.Lens", Nothing), 
+ ("Data.Aeson", Nothing)]

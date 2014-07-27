@@ -1,9 +1,17 @@
 # JSON command-line utility in Haskell
 
+Jp is command-line utility to parse and transform JSON. JSON inputs
+can be filtered and transformed with Haskell Lens expressions.
+
+## Installation
+
+- Copy ```config/jp/modules``` into ```$HOME/.config/jp/modules```
+- Execute this command in the shell to make cabal sandboxing happy:
+
+        source ./scripts/sandbox.sh
+  
 ## Usage
 
-
-    source ./scripts/sandbox.sh
     cat ./tests/simple.json | sandbox exec ./dist/build/jp/jp -p 
     sandbox exec ./dist/build/jp/jp ./tests/obj1.json -e '<&> members . _Number *~ 10'
 

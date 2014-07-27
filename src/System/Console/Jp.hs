@@ -31,18 +31,20 @@ data JsonInput = JsonInput String Value
 processJSON :: St -> JsonInput -> IO ()
 processJSON St { options = Options{ optColor = True,
                                     optExpr = Just expr,
-                                    optMinimize = False}}
+                                    optMinimize = False},
+                 modules = modules}
   (JsonInput s _) = do
-  res <- runAesonLensInterpreter s expr
+  res <- runAesonLensInterpreter s expr modules
   case res of
      Right v -> putDoc (encodePretty v)
      Left errMsg -> do
        putStr $ errMsg
        exitFailure
 
-processJSON St { options = Options{ optExpr = Just expr, optMinimize = True}}
+processJSON St { options = Options{ optExpr = Just expr, optMinimize = True},
+                 modules = modules}
   (JsonInput s _) = do
-  res <- runAesonLensInterpreter s expr
+  res <- runAesonLensInterpreter s expr modules
   case res of
      Right v -> putJsonMinimized v
      Left errMsg -> do
