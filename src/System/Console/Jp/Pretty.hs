@@ -9,7 +9,7 @@ module System.Console.Jp.Pretty (
     
     -- * Pretty-Printing with Configuration Options
     encodePretty',
-    Config (..), defConfig, compactConfig,
+    Config (..), defConfig, compactConfig, nocolorConfig,
     
     -- ** Sorting Keys in Objects
     -- |With the Aeson library, the order of keys in objects is undefined due
@@ -152,6 +152,24 @@ defConfig = Config { confIndent = 4
                    , numberFn = dullmagenta
                    , boolFn = dullred
                    , nullFn = white
+                   }
+
+nocolorConfig :: Config
+nocolorConfig = Config { confIndent = 4
+                   , confCompare = mempty
+                   , beforeSep = empty
+                   , afterSep = (comma <> empty)
+                   , pairSep = (colon <> space)
+                   , catObject = cat
+                   , catArray = cat
+                   , arrayPrefix = (lbracket <$> empty)
+                   , arraySuffix = (empty <$> rbracket)
+                   , objectPrefix = (lbrace <$> empty)
+                   , objectSuffix = (empty <$> rbrace)
+                   , stringFn = id
+                   , numberFn = id
+                   , boolFn = id
+                   , nullFn = id
                    }
 
 compactConfig :: Config

@@ -29,13 +29,16 @@ defaultOptions = Options { optExpr = Nothing,
 options :: [OptDescr (Options -> Options)]
 options = [ Option ['p'] ["pipe"] (NoArg pipeOpt) pipeDesc
           , Option ['e'] ["expr"] (ReqArg exprOpt "<expr>") exprDesc
-          , Option ['m'] ["minimize"] (NoArg minimizeOpt) minimizeDesc]
+          , Option ['m'] ["minimize"] (NoArg minimizeOpt) minimizeDesc
+          , Option [] ["no-color"] (NoArg nocolorOpt) nocolorDesc]
     where pipeDesc = "Reads input from STDIN and outputs to STDOUT"
           pipeOpt o = o { optPipe = True }
           exprDesc = "A lens expression used to transform the input"
           exprOpt expr o = o { optExpr = Just expr }
-          minimizeDesc = "Minimizes the output."
+          minimizeDesc = "Minimizes the output"
           minimizeOpt o = o { optMinimize = True }
+          nocolorOpt o = o { optColor = False }
+          nocolorDesc = "Do not colorize output"
 
 
 compileOpts :: [String] -> Either [String] (Options, [String])

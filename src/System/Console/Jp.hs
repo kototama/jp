@@ -19,7 +19,7 @@ import qualified System.Console.Jp.Modules as M
 data St = St { options :: Options,
                modules :: [M.Module],
                files :: [FilePath]
-             }
+             } deriving Show
 
 getUsage :: IO String
 getUsage = do
@@ -41,6 +41,18 @@ processJSON St { options = Options{ optColor = True,
        putStr $ errMsg
        exitFailure
 
+processJSON St { options = Options{ optColor = False,
+                                    optExpr = Just expr,
+                                    optMinimize = False},
+                 modules = modules}
+  (JsonInput s _) = do
+  res <- runAesonLensInterpreter s expr modules
+  case res of
+     Right v -> putDoc (encodePretty' nocolorConfig v)
+     Left errMsg -> do
+       putStr $ errMsg
+       exitFailure       
+
 processJSON St { options = Options{ optExpr = Just expr, optMinimize = True},
                  modules = modules}
   (JsonInput s _) = do
@@ -54,6 +66,10 @@ processJSON St { options = Options{ optExpr = Just expr, optMinimize = True},
 processJSON St { options = Options{ optColor = True, optExpr = Nothing, optMinimize = False}}
   (JsonInput _ v) = do
   putDoc $ encodePretty v
+
+processJSON St { options = Options{ optColor = False, optExpr = Nothing, optMinimize = False}}
+  (JsonInput _ v) = do
+  putDoc $ encodePretty' nocolorConfig v
 
 processJSON St { options = Options{ optColor = True, optExpr = Nothing, optMinimize = True}}
   (JsonInput _ v) = do
