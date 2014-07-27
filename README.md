@@ -27,3 +27,13 @@ Resulting JSON expressions are pretty-printed with colors.
 Lens tutorials:
 - [FP Complete Lens tutorial](https://www.fpcomplete.com/school/to-infinity-and-beyond/pick-of-the-week/a-little-lens-starter-tutorial)
 - [FP Complete tutorial on Lens + JSON](https://www.fpcomplete.com/user/tel/lens-aeson-traversals-prisms)
+
+## Screenshots
+
+### Applying a Lens expression
+
+   [Lens expression](https://raw.githubusercontent.com/kototama/jp/master/screenshots/lens.png)
+   
+### Simple Pretty Printing
+
+   [Simple pretty printing](https://raw.githubusercontent.com/kototama/jp/master/screenshots/simple.png)
