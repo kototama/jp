@@ -32,8 +32,8 @@ Lens tutorials:
 
 ### Applying a Lens expression
 
-   [Lens expression](https://raw.githubusercontent.com/kototama/jp/master/screenshots/lens.png)
+    ![Lens expression](https://raw.githubusercontent.com/kototama/jp/master/screenshots/lens.png)
    
 ### Simple Pretty Printing
 
-   [Simple pretty printing](https://raw.githubusercontent.com/kototama/jp/master/screenshots/simple.png)
+    ![Simple pretty printing](https://raw.githubusercontent.com/kototama/jp/master/screenshots/simple.png)
