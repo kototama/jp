@@ -155,22 +155,11 @@ defConfig = Config { confIndent = 4
                    }
 
 nocolorConfig :: Config
-nocolorConfig = Config { confIndent = 4
-                   , confCompare = mempty
-                   , beforeSep = empty
-                   , afterSep = (comma <> empty)
-                   , pairSep = (colon <> space)
-                   , catObject = cat
-                   , catArray = cat
-                   , arrayPrefix = (lbracket <$> empty)
-                   , arraySuffix = (empty <$> rbracket)
-                   , objectPrefix = (lbrace <$> empty)
-                   , objectSuffix = (empty <$> rbrace)
-                   , stringFn = id
-                   , numberFn = id
-                   , boolFn = id
-                   , nullFn = id
-                   }
+nocolorConfig = defConfig { stringFn = id
+                          , numberFn = id
+                          , boolFn = id
+                          , nullFn = id
+                          }
 
 compactConfig :: Config
 compactConfig = defConfig { confIndent = 0,
